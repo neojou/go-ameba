@@ -16,8 +16,7 @@ void _AppStart(void)
 }
 
 
-IMAGE2_TEXT_SECTION
-int main(void)
+int cmain(void)
 {
 	__libc_init_array();
 
