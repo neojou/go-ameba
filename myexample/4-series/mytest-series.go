@@ -10,7 +10,7 @@ func main() {
 	fmt.Println(s1)
 	s2 := series.New([]int{1, 2}, series.Int, "COL.2")
 	fmt.Println(s2)
-	s3 := series.New([]float64{3.0, 4.0}, series.Int, "COL.3")
+	s3 := series.New([]float64{3.0, 4.0}, series.Float, "COL.3")
 	fmt.Println(s3)
 }
 
