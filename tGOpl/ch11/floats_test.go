@@ -1,7 +1,6 @@
 package myfloats
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -55,11 +54,11 @@ func TestDistance(t *testing.T) {
 	for j, test := range slices {
 		tmp := make([]float64, len(test.s))
 		for i, L := range norms {
-			dist := floats.Distance(test.s, test.t, L)
+			dist := Distance(test.s, test.t, L)
 			copy(tmp, test.s)
 			floats.Sub(tmp, test.t)
 			norm := floats.Norm(tmp, L)
-			if dist != norm { // Use equality because they should be identical
+			if !floats.EqualWithinAbs(dist, norm, EqTolerance) { // Use equality because they should be identical
 				t.Errorf("Distance does not match norm for case %v, %v. Expected %v, Found %v.", i, j, norm, dist)
 			}
 		}
@@ -68,12 +67,11 @@ func TestDistance(t *testing.T) {
 	for j, test := range slices {
 		tmp := make([]float64, len(test.s))
 		for i, L := range norms {
-			fmt.Printf("i=%d, L=%f\n", i, L)
 			dist := Distance1(test.s, test.t, L)
 			copy(tmp, test.s)
 			floats.Sub(tmp, test.t)
 			norm := floats.Norm(tmp, L)
-			if dist != norm { // Use equality because they should be identical
+			if !floats.EqualWithinAbs(dist, norm, EqTolerance) { // Use equality because they should be identical
 				t.Errorf("Distance1 does not match norm for case %v, %v. Expected %v, Found %v.", i, j, norm, dist)
 			}
 		}

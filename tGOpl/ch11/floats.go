@@ -138,7 +138,7 @@ func Distance1(s, t []float64, L float64) float64 {
 				sumSquares = 1 + sumSquares*(scale/absxi)*(scale/absxi)
 				scale = absxi
 			} else {
-				sumSquares = sumSquares * (absxi/scale)*(absxi/scale)
+				sumSquares = sumSquares + (absxi/scale)*(absxi/scale)
 			}
 		}
 		if math.IsInf(scale, 1) {
