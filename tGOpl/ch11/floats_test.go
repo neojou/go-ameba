@@ -28,6 +28,11 @@ func TestNorm(t *testing.T) {
 	if math.Abs(val - truth) > EqTolerance {
 		t.Errorf("Doesn't match for inf norm, %v expected, %v found", truth, val)
 	}
+
+	val = Dnrm2(s)
+	if math.Abs(val - truth) > EqTolerance {
+		t.Errorf("Doesn't match for inf norm, %v expected, %v found", truth, val)
+	}
 }
 
 

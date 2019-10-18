@@ -74,6 +74,27 @@ func Norm2(s []float64) float64 {
 	return twoNorm
 }
 
+func Dnrm2(s []float64) float64 {
+	if len(s) == 1 {
+		return math.Abs(s[0])
+	}
+	var scale	float64 = 0
+	var sumSquares	float64 = 1
+	for i := 0; i < len(s); i++ {
+		absxi := math.Abs(s[i])
+		if scale < absxi {
+			sumSquares = 1 + sumSquares*(scale/absxi)*(scale/absxi)
+			scale = absxi
+		} else {
+			sumSquares = sumSquares + (absxi/scale)*(absxi/scale)
+		}
+	}
+	if math.IsInf(scale, 1) {
+		return math.Inf(1)
+	}
+	return scale * math.Sqrt(sumSquares)
+}
+
 // Distance computes the L-norm of s - t. See Norm for special cases.
 // A panic will occur if the lengths of s and t do not match.
 func Distance(s, t []float64, L float64) float64 {
