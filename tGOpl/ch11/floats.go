@@ -112,5 +112,60 @@ func Distance(s, t []float64, L float64) float64 {
 	return math.Pow(norm, 1/L)
 }
 
+// Distance computes the L-norm of s - t. See Norm for special cases.
+// A panic will occur if the lengths of s and t do not match.
+func Distance1(s, t []float64, L float64) float64 {
+	if len(s) != len(t) {
+		panic("floats: slice lengths do not match")
+	}
+	if len(s) == 0 {
+		return 0
+	}
+	var norm float64
+	if L == 2 {
+		if len(s) == 1 {
+			return math.Abs(s[0] - t[0])
+		}
+		var scale	float64 = 0
+		var sumSquares	float64 = 1
+		for i, sv := range s {
+			tv := t[i]
+			if sv == tv {
+				continue
+			}
+			absxi := math.Abs(sv - tv)
+			if scale < absxi {
+				sumSquares = 1 + sumSquares*(scale/absxi)*(scale/absxi)
+				scale = absxi
+			} else {
+				sumSquares = sumSquares * (absxi/scale)*(absxi/scale)
+			}
+		}
+		if math.IsInf(scale, 1) {
+			return math.Inf(1)
+		}
+		return scale * math.Sqrt(sumSquares)
+	}
+	if L == 1 {
+		for i, v := range s {
+			norm += math.Abs(t[i] - v)
+		}
+		return norm
+	}
+	if math.IsInf(L, 1) {
+		for i, v := range s {
+			absDiff := math.Abs(t[i] - v)
+			if absDiff > norm {
+				norm = absDiff
+			}
+		}
+		return norm
+	}
+	for i, v := range s {
+		norm += math.Pow(math.Abs(t[i]-v), L)
+	}
+	return math.Pow(norm, 1/L)
+}
+
 
 
