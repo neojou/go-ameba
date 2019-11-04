@@ -18,7 +18,7 @@ type CSVRecord struct {
 }
 
 func main() {
-	f, err1 := os.Open("iris.csv")
+	f, err1 := os.Open("../data/iris.csv")
 	if err1 != nil {
 		fmt.Println("open csv file failed");
 		return;

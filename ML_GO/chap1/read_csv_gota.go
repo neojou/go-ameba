@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"github.com/neojou/mygota/dataframe"
+	"github.com/kniren/gota/dataframe"
 )
 
 type CSVRecord struct {
@@ -16,7 +16,7 @@ type CSVRecord struct {
 }
 
 func main() {
-	f, err1 := os.Open("iris.csv")
+	f, err1 := os.Open("../data/iris.csv")
 	if err1 != nil {
 		fmt.Println("open csv file failed");
 		return;
