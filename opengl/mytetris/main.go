@@ -3,55 +3,29 @@ package main
 import (
 //	"fmt"
 	"runtime"
-//	"time"
+	"time"
+//	"os"
 
+//	"github.com/4ydx/gltext"
+//	"github.com/4ydx/gltext/v4.1"
+//	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
+//	"github.com/go-gl/mathgl/mgl32"
+//	"golang.org/x/image/math/fixed"
 )
 
 const (
 	WINDOW_MAIN_SIZE_X	= 800
 	WINDOW_MAIN_SIZE_Y	= 600
 
-	BlockSize	= 20
-	FieldHeight	= 20
-	FieldWidth	= 10
-	TetroSize	=4
-
 	W = WINDOW_MAIN_SIZE_X
 	H = WINDOW_MAIN_SIZE_Y
 )
 
-/* objects */
-
-func glVertex(x, y int) {
-	gl.Vertex2i(int32(x), int32(y))
-}
-
-func draw_line(x1, y1, x2, y2 int) {
-	gl.Begin(gl.LINES)
-	glVertex(x1, y1)
-	glVertex(x2, y2)
-	gl.End()
-}
-
-func draw_rect(x1, y1, x2, y2 int) {
-	//fmt.Printf("x1:%d, y1:%d, x2:%d, y2:%d\n", x1, y1, x2, y2)
-	gl.Begin(gl.POLYGON);
-	glVertex(x1, y1)
-	glVertex(x2, y1)
-	glVertex(x2, y2)
-	glVertex(x1, y2)
-	gl.End()
-}
-
-func draw_rect_border(x1, y1, x2, y2, width int) {
-	gl.Color3f(0, 0, 0)
-	draw_rect(x1, y1, x2, y1 + width)
-	draw_rect(x2 - width, y1, x2, y2)
-	draw_rect(x1, y2 - width, x2, y2)
-	draw_rect(x1, y1, x1 + width, y2)
-}
+/* fonts */
+//var font *v41.Font
+//var txts []*v41.Text
 
 /* windows */
 
@@ -74,8 +48,12 @@ func (gw GameWin) draw() {
 //	fmt.Printf("draw main win: sizex:%d, sizey:%d, startx:%d, starty:%d\n",
 //		    gw.sizex, gw.sizey, gw.startx, gw.starty)
 
+	// Border
 	draw_rect_border(gw.startx, gw.starty, gw.sizex + gw.startx,
 			 gw.sizey + gw.starty, 3)
+
+	tetro.draw(gw.startx - BlockSize + 3, gw.starty + 5)
+	draw_field(gw.startx - BlockSize + 3, gw.starty + 5)
 }
 
 
@@ -87,7 +65,9 @@ func (gw NextWin) draw() {
 //	fmt.Printf("draw main win: sizex:%d, sizey:%d, startx:%d, starty:%d\n",
 //		    gw.sizex, gw.sizey, gw.startx, gw.starty)
 
+	// Border
 	draw_rect(gw.startx, gw.starty, gw.sizex + gw.startx, gw.sizey + gw.starty)
+
 }
 
 func initGlfw() *glfw.Window {
@@ -103,6 +83,15 @@ func initGlfw() *glfw.Window {
 	}
 
 	window.MakeContextCurrent()
+	window.SetKeyCallback(tetro.keyPress)
+	// Timer
+	ticker := time.NewTicker(time.Millisecond * TimerPeriod)
+	go func() {
+		for range ticker.C {
+			//fmt.Println("tick")
+			tetro.update()
+		}
+	}()
 
 	return window
 }
@@ -123,26 +112,100 @@ func drawScene(game GameWin, window *glfw.Window) {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 	game.draw()
+/*
+	for index, text := range txts {
+		text.SetPosition(mgl32.Vec2{0, float32(index * 50)})
+		text.Draw()
 
+		text.Show()
+	}
+*/
 	window.SwapBuffers()
+	glfw.PollEvents()
 }
 
 func main() {
 
 	runtime.LockOSThread()
 
+	initGame()
+
 	window := initGlfw()
 	defer glfw.Terminate()
 
 	initOpenGL()
 
-	game := GameWin{MyWin{360, 540, 40, 30}}
+/*
+	// font setting
+
+	gltext.IsDebug = true
+
+	config, err := gltext.LoadTruetypeFontConfig("fontconfigs", "font_1_honokamin")
+	if err == nil {
+		font, err = v41.NewFont(config)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Font loaded from disk...")
+	} else {
+		fd, err := os.Open("font/font_1_honokamin.ttf")
+		if err != nil {
+			panic(err)
+		}
+		defer fd.Close()
+
+		runeRanges := make(gltext.RuneRanges, 0)
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 32, High: 128})
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 0x3000, High: 0x3030})
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 0x3040, High: 0x309f})
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 0x30a0, High: 0x30ff})
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 0x4e00, High: 0x9faf})
+		runeRanges = append(runeRanges, gltext.RuneRange{Low: 0xff00, High: 0xffef})
+
+		scale := fixed.Int26_6(32)
+		runesPerRow := fixed.Int26_6(128)
+		config, err = gltext.NewTruetypeFontConfig(fd, scale, runeRanges, runesPerRow, 5)
+		if err != nil {
+			panic(err)
+		}
+		err = config.Save("fontconfigs", "font_1_honokamin")
+		if err != nil {
+			panic(err)
+		}
+		font, err = v41.NewFont(config)
+		if err != nil {
+			panic(err)
+		}
+	}
+*/
+
+	game := GameWin{MyWin{308, 533, 40, 30}}
 	//next := NextWin{MyWin{30, 128, 5, 0}}
+
+/*
+	str0 := "0123456789"
+
+	scaleMin, scaleMax := float32(1.0), float32(1.1)
+	strs := []string{str0}
+	txts = []*v41.Text{}
+
+	for _, str := range strs {
+		text := v41.NewText(font, scaleMin, scaleMax)
+		text.SetString(str)
+		text.SetColor(mgl32.Vec3{1, 1, 1})
+		txts = append(txts, text)
+	}
+*/
 
 	for !window.ShouldClose() {
 		drawScene(game, window)
-		glfw.PollEvents()
 	}
+/*
+	for _, text := range txts {
+		text.Release()
+	}
+	font.Release()
+*/
 }
 
 
